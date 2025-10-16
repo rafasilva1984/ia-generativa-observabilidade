@@ -6,7 +6,8 @@ services:
     container_name: elasticsearch
     environment:
       - discovery.type=single-node
-      - xpack.security.enabled=false
+      - xpack.security.enabled: false
+      - xpack.security.enrollment.enabled: false
       - xpack.license.self_generated.type=basic
       - ES_JAVA_OPTS=-Xms1g -Xmx1g
     volumes:
@@ -20,13 +21,16 @@ services:
       timeout: 5s
       retries: 30
     networks: [ labnet ]
-  kibana:
+kibana:
     image: docker.elastic.co/kibana/kibana:8.15.2
     container_name: kibana
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-      - SERVER_PUBLICBASEURL=http://localhost:5601
       - ELASTICSEARCH_SSL_VERIFICATIONMODE=none
+      - SERVER_PUBLICBASEURL=http://localhost:5601
+      - XPACK_SECURITY_ENABLED=false
+      - TELEMETRY_OPTIN=false
+      - XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
     ports:
       - "5601:5601"
     depends_on:
@@ -36,8 +40,9 @@ services:
       test: ["CMD-SHELL", "curl -fsS http://localhost:5601/api/status >/dev/null || exit 1"]
       interval: 10s
       timeout: 5s
-      retries: 30
-    networks: [ labnet ]
+      retries: 20
+    networks:
+      - labnet
   mock-llm:
     build: ./mock-llm
     ports:
